@@ -4,5 +4,5 @@ ifeq ($($MESA_DIR_INTENTIONALLY_EMPTY),)
 endif
 endif
 
-include $(MESA_DIR)/star/work_standard_makefile
+include work_standard_makefile
 STAR = star

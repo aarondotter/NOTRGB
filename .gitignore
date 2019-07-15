@@ -3,3 +3,4 @@ LOGS/*
 make/*.o
 make/*.mod
 star
+src/*~
