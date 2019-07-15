@@ -52,8 +52,8 @@
          s% data_for_extra_profile_columns => data_for_extra_profile_columns  
 
          !define other routines here; remember to set use_other_ in inlist
-         s% other_kap_get => my_kap_get
-
+         !s% other_kap_get => my_kap_get
+         s% other_kap_get => Kramers_kap_get
          end subroutine extras_controls
       
       
@@ -330,6 +330,62 @@
             frac_Type2, kap, dlnkap_dlnRho, dlnkap_dlnT, ierr)
 
       end subroutine my_kap_get
+
+
+
+      subroutine Kramers_kap_get( &
+            id, k, handle, zbar, X, Z, Zbase, XC, XN, XO, XNe, &
+            logRho, logT, species, chem_id, net_iso, xa, &
+            lnfree_e, d_lnfree_e_dlnRho, d_lnfree_e_dlnT, &
+            frac_Type2, kap, dlnkap_dlnRho, dlnkap_dlnT, ierr)
+ 
+            use crlibm_lib, only: log_cr, exp10_cr
+
+         ! INPUT
+         integer, intent(in) :: id ! star id if available; 0 otherwise
+         integer, intent(in) :: k ! cell number or 0 if not for a particular cell         
+         integer, intent(in) :: handle ! from alloc_kap_handle
+         real(dp), intent(in) :: zbar ! average ion charge
+         real(dp), intent(in) :: X, Z, Zbase, XC, XN, XO, XNe ! composition    
+         real(dp), intent(in) :: logrho ! density
+         real(dp), intent(in) :: logT ! temperature
+         real(dp), intent(in) :: lnfree_e, d_lnfree_e_dlnRho, d_lnfree_e_dlnT
+            ! free_e := total combined number per nucleon of free electrons and positrons
+
+         integer, intent(in) :: species
+         integer, pointer :: chem_id(:) ! maps species to chem id
+            ! index from 1 to species
+            ! value is between 1 and num_chem_isos         
+         integer, pointer :: net_iso(:) ! maps chem id to species number
+            ! index from 1 to num_chem_isos (defined in chem_def)
+            ! value is 0 if the iso is not in the current net
+            ! else is value between 1 and number of species in current net
+         real(dp), intent(in) :: xa(:) ! mass fractions
+         
+         ! LOCAL
+         real(dp) :: lnkappa_bf, lnkappa_ff, dlnkbf_dlnT, dlnkff_dlnT
+         real(dp), parameter :: ln_k_bf = 59.0325d0
+         real(dp), parameter :: ln_k_ff = 51.9598d0
+
+         ! OUTPUT
+         real(dp), intent(out) :: frac_Type2
+         real(dp), intent(out) :: kap ! opacity
+         real(dp), intent(out) :: dlnkap_dlnRho ! partial derivative at constant T
+         real(dp), intent(out) :: dlnkap_dlnT   ! partial derivative at constant Rho
+         integer, intent(out) :: ierr ! 0 means AOK.
+
+         frac_Type2 = 0.0d0
+         ierr = 0
+
+         lnkappa_bf = ln_k_bf + log_cr(          Z * (1.0d0 + X)) + logRho - 3.5d0*logT
+         lnkappa_ff = ln_k_ff + log_cr((1.0d0 - Z) * (1.0d0 + X)) + logRho - 3.5d0*logT
+
+         kap = exp10_cr(lnkappa_bf) + exp10_cr(lnkappa_ff)
+         dlnkap_dlnRho = 1.0d0
+         dlnKap_dlnT = -3.5d0
+
+      end subroutine Kramers_kap_get
+
 
 
       end module run_star_extras

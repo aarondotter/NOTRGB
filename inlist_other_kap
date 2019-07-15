@@ -6,6 +6,7 @@
       show_net_reactions_info = .false.
       list_net_reactions = .true.
 
+      create_pre_main_sequence_model = .false.
 
       load_saved_model = .true.
       saved_model_name = 'start.mod'
@@ -29,8 +30,8 @@
 
       pgstar_flag = .true.
 
-      extras_rpar(1) = -1.0d0 !constant X value
-      extras_rpar(2) = -1.0d0 !constant Z value
+      extras_rpar(1) = 0.0d0 !constant X value for my_kap_get
+      extras_rpar(2) = 0.0d0 !constant Z value for my_kap_get
 
 / ! end of star_job namelist
 
@@ -76,7 +77,7 @@
       delta_lgL_He_limit = 0.01d0
 
       power_he_burn_upper_limit = 1.0d7
-      log_L_upper_limit = 3.0d0
+      log_L_upper_limit = 4.0
  
       cool_wind_full_on_T = 9.99d9
       hot_wind_full_on_T = 1d10 
