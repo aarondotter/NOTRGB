@@ -50,7 +50,11 @@
          s% data_for_extra_history_columns => data_for_extra_history_columns
          s% how_many_extra_profile_columns => how_many_extra_profile_columns
          s% data_for_extra_profile_columns => data_for_extra_profile_columns  
-      end subroutine extras_controls
+
+         !define other routines here; remember to set use_other_ in inlist
+         s% other_kap_get => my_kap_get
+
+         end subroutine extras_controls
       
       
       integer function extras_startup(id, restart, ierr)
@@ -262,6 +266,71 @@
          end subroutine move_flg
       
       end subroutine move_extra_info
+
+
+      subroutine my_kap_get( &
+            id, k, handle, zbar, X, Z, Zbase, XC, XN, XO, XNe, &
+            logRho, logT, species, chem_id, net_iso, xa, &
+            lnfree_e, d_lnfree_e_dlnRho, d_lnfree_e_dlnT, &
+            frac_Type2, kap, dlnkap_dlnRho, dlnkap_dlnT, ierr)
+ 
+            use kap_lib, only: kap_get
+
+         ! INPUT
+         integer, intent(in) :: id ! star id if available; 0 otherwise
+         integer, intent(in) :: k ! cell number or 0 if not for a particular cell         
+         integer, intent(in) :: handle ! from alloc_kap_handle
+         real(dp), intent(in) :: zbar ! average ion charge
+         real(dp), intent(in) :: X, Z, Zbase, XC, XN, XO, XNe ! composition    
+         real(dp), intent(in) :: logrho ! density
+         real(dp), intent(in) :: logT ! temperature
+         real(dp), intent(in) :: lnfree_e, d_lnfree_e_dlnRho, d_lnfree_e_dlnT
+            ! free_e := total combined number per nucleon of free electrons and positrons
+
+         integer, intent(in) :: species
+         integer, pointer :: chem_id(:) ! maps species to chem id
+            ! index from 1 to species
+            ! value is between 1 and num_chem_isos         
+         integer, pointer :: net_iso(:) ! maps chem id to species number
+            ! index from 1 to num_chem_isos (defined in chem_def)
+            ! value is 0 if the iso is not in the current net
+            ! else is value between 1 and number of species in current net
+         real(dp), intent(in) :: xa(:) ! mass fractions
+         
+         ! LOCAL
+         type (star_info), pointer :: s
+         real(dp) :: my_X, my_Z
+
+         ! OUTPUT
+         real(dp), intent(out) :: frac_Type2
+         real(dp), intent(out) :: kap ! opacity
+         real(dp), intent(out) :: dlnkap_dlnRho ! partial derivative at constant T
+         real(dp), intent(out) :: dlnkap_dlnT   ! partial derivative at constant Rho
+         integer, intent(out) :: ierr ! 0 means AOK.
+                  
+
+         call star_ptr(id, s, ierr)
+         if (ierr /= 0) return
+
+         if (s% job% extras_rpar(1) < 0.0d0) then 
+            my_X = X
+         else
+            my_X = s% job% extras_rpar(1)
+         endif
+
+         if (s% job% extras_rpar(2) < 0.0d0) then
+            my_Z = Z
+         else
+            my_Z = s% job% extras_rpar(2)
+         endif
+
+         call kap_get( &
+            handle, zbar, my_X, my_Z, Zbase, XC, XN, XO, XNe, logRho, logT, &
+            lnfree_e, d_lnfree_e_dlnRho, d_lnfree_e_dlnT, &
+            frac_Type2, kap, dlnkap_dlnRho, dlnkap_dlnT, ierr)
+
+      end subroutine my_kap_get
+
 
       end module run_star_extras
       
