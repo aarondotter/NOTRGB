@@ -51,7 +51,7 @@
       trace_history_value_name(2) = 'log_rel_run_E_err'
 
       ! check for retries and backups as part of test_suite
-         max_number_backups = 10
+         max_number_backups = -1
          max_number_retries = 160
          max_model_number = 6500
 
@@ -65,7 +65,7 @@
       delta_lgL_He_limit = 0.01d0
 
       power_he_burn_upper_limit = 1.0d7
-      log_L_upper_limit = 3.0d0
+      log_L_upper_limit = 4.0d0
  
       cool_wind_full_on_T = 9.99d9
       hot_wind_full_on_T = 1d10 
